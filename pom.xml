@@ -94,6 +94,7 @@
         <jerseyVersion>1.9.1</jerseyVersion>
         <jobdslVersion>1.35</jobdslVersion>
         <basicStepVersion>2.6</basicStepVersion>
+        <credentialsVersion>2.1.13</credentialsVersion>
     </properties>
 
     <dependencies>
@@ -169,7 +170,7 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>credentials</artifactId>
-            <version>1.10</version>
+            <version>${credentialsVersion}</version>
         </dependency>
                 
     </dependencies>
