@@ -22,23 +22,25 @@
  */
 package org.jenkinsci.plugins.artifactpromotion;
 
-import org.eclipse.aether.artifact.Artifact;
-import org.eclipse.aether.repository.RemoteRepository;
+import hudson.model.Describable;
+import hudson.remoting.VirtualChannel;
 
-public interface IDeleteArtifact {
+import org.jenkinsci.plugins.artifactpromotion.exception.PromotionException;
 
-    /**
-     * This method is responsible to remove an artifact from a repository.
-     * This is needed then the repository server does not support any 
-     * metadata to label artifacts depending on their stage and the artifact has 
-     * to be moved by a copy/delete pattern. 
-     * This method should delete the corresponding pom file, too.
-     * 
-     * @param stagingRepo - The staging repository.
-     * @param artifact - The artifact with all needed informations.
-     * @throws IllegalStateException Thrown then something goes wrong.
-     */
-    public abstract void deleteArtifact(RemoteRepository stagingRepo, Artifact artifact)
-            throws IllegalStateException;
 
+/**
+ * Interface which a server specific implementation has to implement to
+ * provide product specific handling of artifact promotion.  
+ *
+ */
+public interface Promotor extends Describable<Promotor> {
+	
+	/**
+	 * This method calls the 'real' promotion stuff or may it do it self. 
+	 * 
+	 * @param channel - a hudson.Channel to enable runs on slaves.
+	 * @throws PromotionException thrown then the promotion has gone wrong 
+	 */
+	public void callPromotor(VirtualChannel channel) throws PromotionException;
+	
 }

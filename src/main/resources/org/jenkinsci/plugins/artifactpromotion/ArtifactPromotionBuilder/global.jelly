@@ -1,3 +1,4 @@
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <!--
     This Jelly script is used to produce the global configuration option.
@@ -12,9 +13,11 @@
     so it should be straightforward to find them.
   -->
   <f:section title="Artifact Promotion Plugin">
+    <!-- 
     <f:entry title="Dummy" field="useDummy"
       description="Check if you are an dummy user.">
       <f:checkbox />
     </f:entry>
+    -->
   </f:section>
 </j:jelly>

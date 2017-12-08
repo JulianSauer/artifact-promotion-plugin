@@ -1,6 +1,6 @@
 /**
  * The MIT License
- * Copyright (c) 2014 Halil-Cem Guersoy
+ * Copyright (c) 2014 Halil-Cem Guersoy and all contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,15 +22,16 @@
  */
 package org.jenkinsci.plugins.artifactpromotion;
 
-import java.io.PrintStream;
-
-import org.eclipse.aether.artifact.Artifact;
-import org.eclipse.aether.repository.RemoteRepository;
-
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.core.util.Base64;
+import hudson.model.TaskListener;
+import hudson.util.Secret;
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.repository.RemoteRepository;
+
+import java.io.Serializable;
 
 /**
  * This class is responsible to remove a artifact from a Nexus OSS repository.
@@ -42,10 +43,11 @@ import com.sun.jersey.core.util.Base64;
  * @author Halil-Cem Guersoy
  *
  */
-public class DeleteArtifactNexusOSS implements IDeleteArtifact {
+public class DeleteArtifactNexusOSS implements IDeleteArtifact, Serializable {
 
-    
-    /**
+	private static final long serialVersionUID = 1L;
+
+	/**
      * The URL path delimiter.
      */
     private static final String DELI = "/";
@@ -53,51 +55,59 @@ public class DeleteArtifactNexusOSS implements IDeleteArtifact {
     /**
      * Nexus returns status code 204 then deleted successful via REsT API.
      */
-    private static final int NEXUS_DELETE_SUCESS = 204;   
+    private static final int NEXUS_DELETE_SUCESS = 204;    
     
-    private PrintStream logger; 
+    private boolean debug;
     
+    private String user;
+    
+    private Secret password;
+    
+    private TaskListener listener;
     
     /**
      * The default constructor.
-     * 
-     * @param logger A simple PrintStream, obtained from Jenkins.
      */
-    public DeleteArtifactNexusOSS(PrintStream logger) {
+    public DeleteArtifactNexusOSS(TaskListener listener, final String user, final Secret password, final boolean debug) {
         super();
-        this.logger = logger;
+        this.debug = debug;
+        this.user = user;
+        this.password = password;
+        this.listener = listener;
     }
 
     /** 
      * Delete a artifact from a Nexus OSS repo using the REST interface of NexusOSS.
      * 
-     * @see org.jenkinsci.plugins.artifactpromotion.IDeleteArtifact#deleteArtifact(org.eclipse.aether.repository.RemoteRepository, org.eclipse.aether.artifact.Artifact, java.io.PrintStream)
+     * TODO change to actual jersey version. Here it is still a old version used.
+     * 
+     * @see org.jenkinsci.plugins.artifactpromotion.IDeleteArtifact#deleteArtifact(org.eclipse.aether.repository.RemoteRepository, org.eclipse.aether.artifact.Artifact)
      */
-    public void deleteArtifact(RemoteRepository stagingRepo, Artifact artifact) throws IllegalStateException {
+    public void deleteArtifact(final RemoteRepository stagingRepo, final Artifact artifact) throws IllegalStateException {
 
         String requestURL = stagingRepo.getUrl() + artifact.getGroupId().replace(".", DELI) + DELI
                 + artifact.getArtifactId() + DELI + artifact.getVersion() + DELI;
-        logger.println("Request URL is: [" + requestURL + "]");
+        
+        if (debug) listener.getLogger().println("Request URL is: [" + requestURL + "]");
 
-        String user = "kunlaboro";
-        String password = "NexusKunlaboro";
-        String auth = new String(Base64.encode(user + ":" + password));
-
+        //TODO needs rework for anonymous access
+        String auth = new String(Base64.encode(this.user + ":" + Secret.toString(this.password)));
+        
         Client client = Client.create();
         WebResource webResource = client.resource(requestURL);
-        ClientResponse response = webResource.header("Authorization", "Basic " + auth).type("application/json")
+        ClientResponse response = webResource.header("Authorization", "Digest " + auth).type("application/json")
                 .accept("application/json").delete(ClientResponse.class);
 
         int statusCode = response.getStatus();
 
-        logger.println("Status code is: " + statusCode);
+        if (debug) listener.getLogger().println("Status code is: " + statusCode);
 
         if (statusCode == 401) {
             throw new IllegalStateException("Invalid Username or Password while accessing target repository.");
         } else if (statusCode != NEXUS_DELETE_SUCESS) {
             throw new IllegalStateException("The artifact is not deleted - status code is: " + statusCode);
         }
-        logger.println("Successfully deleted artifact " + artifact.getArtifactId() + " from repository " + stagingRepo.getId());
+        listener.getLogger().println("Successfully deleted artifact " + artifact.getArtifactId() + " from repository " + stagingRepo.getUrl());
         
     }
  
