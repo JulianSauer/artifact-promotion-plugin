@@ -1,8 +1,16 @@
 package org.jenkinsci.plugins.artifactpromotion;
 
+import com.cloudbees.plugins.credentials.CredentialsMatchers;
+import com.cloudbees.plugins.credentials.CredentialsProvider;
+import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
+import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
+import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
+import hudson.model.Item;
+import hudson.security.ACL;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import jenkins.model.Jenkins;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.QueryParameter;
 
 /**
@@ -81,6 +89,24 @@ public interface FormValidator {
         }
 
         return promoterModel;
+    }
+
+    default ListBoxModel doFillStagingPWItems(@AncestorInPath Item item, @QueryParameter String stagingPW) {
+        StandardListBoxModel result = new StandardListBoxModel();
+        if (item == null) {
+            if (!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) {
+                return result.includeCurrentValue(stagingPW);
+            }
+        } else {
+            if (!item.hasPermission(Item.EXTENDED_READ)
+                    && !item.hasPermission(CredentialsProvider.USE_ITEM)) {
+                return result.includeCurrentValue(stagingPW);
+            }
+        }
+        return result
+                .includeEmptyValue()
+                .includeMatchingAs(ACL.SYSTEM, Jenkins.getInstance(), StandardUsernamePasswordCredentials.class, URIRequirementBuilder.fromUri("").build(), CredentialsMatchers.always())
+                .includeCurrentValue(stagingPW);
     }
 
 }

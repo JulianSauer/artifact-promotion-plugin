@@ -1,6 +1,6 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core"
-         xmlns:f="/lib/form">
+         xmlns:f="/lib/form" xmlns:c="/lib/credentials">
 
     <f:section title="Artifact Information">
         <f:entry title="GroupId" field="groupId" description="The group ID of the artifact.">
@@ -31,8 +31,8 @@
         <f:entry title="User" field="stagingUser" description="The User of the staging repository.">
             <f:textbox/>
         </f:entry>
-        <f:entry title="Password" field="stagingPW" description="The Password for the staging repository.">
-            <f:textbox/>
+        <f:entry title="${%stagingPW}" field="stagingPW" description="The Password for the staging repository.">
+            <c:select />
         </f:entry>
         <f:entry title="Skip deletion"
                  field="skipDeletion" description="Skip artifact deletion from staging Repository.">
@@ -54,10 +54,10 @@
 
     <f:section title="Misc">
         <f:entry title="Repository system" field="promoterClass">
-            <f:select />
+            <f:select/>
         </f:entry>
         <f:entry title="Enable debug output" field="debug" description="Enable debug output in the job console.">
-            <f:checkbox />
+            <f:checkbox/>
         </f:entry>
     </f:section>
 
