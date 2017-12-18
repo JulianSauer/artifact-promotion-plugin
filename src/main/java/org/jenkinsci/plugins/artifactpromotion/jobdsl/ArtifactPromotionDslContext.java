@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.artifactpromotion.jobdsl;
 
+import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
 import javaposse.jobdsl.dsl.Context;
 
 import org.jenkinsci.plugins.artifactpromotion.jobdsl.ArtifactPromotionJobDslExtension.RepositorySystem;
@@ -19,12 +20,10 @@ public class ArtifactPromotionDslContext implements Context {
 	private String extension = "jar";
 	
 	private String stagingRepository;
-	private String stagingUser;
-	private String stagingPassword;
+	private StandardUsernamePasswordCredentials stagingCredentials;
 
 	private String releaseRepository;
-	private String releaseUser;
-	private String releasePassword;
+	private StandardUsernamePasswordCredentials releaseCredentials;
 
 	private String promoterClass = RepositorySystem.NexusOSS.getClassName();
 	private boolean debug = false;
@@ -65,42 +64,32 @@ public class ArtifactPromotionDslContext implements Context {
 		return extension;
 	}
 
-	public void stagingRepository(String repository, String user, String password) {
-		this.stagingRepository(repository, user, password, true);
+	public void stagingRepository(String repository, StandardUsernamePasswordCredentials credentials) {
+		this.stagingRepository(repository, credentials, true);
 	}
-	public void stagingRepository(String repository, String user, String password, boolean skipDeletion) {
+	public void stagingRepository(String repository, StandardUsernamePasswordCredentials credentials, boolean skipDeletion) {
 		this.stagingRepository = repository;
-		this.stagingUser = user;
-		this.stagingPassword = password;
+		this.stagingCredentials = credentials;
 		this.skipDeletion = skipDeletion;
 	}
 	String getStagingRepository() {
 		return stagingRepository;
 	}
 
-	String getStagingUser() {
-		return stagingUser;
+	StandardUsernamePasswordCredentials getStagingCredentials() {
+		return stagingCredentials;
 	}
 
-	String getStagingPassword() {
-		return stagingPassword;
-	}
-
-	public void releaseRepository(String repository, String user, String password) {
+	public void releaseRepository(String repository, StandardUsernamePasswordCredentials credentials) {
 		this.releaseRepository = repository;
-		this.releaseUser = user;
-		this.releasePassword = password;
+		this.releaseCredentials = credentials;
 	}
 	String getReleaseRepository() {
 		return releaseRepository;
 	}
-	
-	String getReleaseUser() {
-		return releaseUser;
-	}
 
-	String getReleasePassword() {
-		return releasePassword;
+	StandardUsernamePasswordCredentials getReleaseCredentials() {
+		return releaseCredentials;
 	}
 
 	String getPromoterClass() {

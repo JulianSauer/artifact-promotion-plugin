@@ -26,10 +26,9 @@ public class ArtifactPromotionJobDslExtension extends ContextExtensionPoint {
 		
 		return new ArtifactPromotionBuilder(
 				context.getGroupId(), context.getArtifactId(), context.getClassifier(), context.getVersion(),
-				context.getExtension(), context.getStagingRepository(), context.getStagingUser(),
-				context.getStagingPassword(), context.getReleaseUser(), context.getReleasePassword(),
-				context.getReleaseRepository(), context.getPromoterClass(), context.isDebugEnabled(),
-				context.isSkipDeletionEnabled());
+				context.getExtension(), context.getStagingRepository(), context.getStagingCredentials(),
+				context.getReleaseCredentials(), context.getReleaseRepository(), context.getPromoterClass(),
+				context.isDebugEnabled(), context.isSkipDeletionEnabled());
 	}
 	
 	public enum RepositorySystem {

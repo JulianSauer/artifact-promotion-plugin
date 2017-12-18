@@ -22,9 +22,9 @@
  */
 package org.jenkinsci.plugins.artifactpromotion;
 
+import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
 import hudson.ExtensionList;
 import hudson.model.TaskListener;
-import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import org.apache.tools.ant.ExtensionPoint;
 
@@ -32,9 +32,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 
+ *
  * Wraps needed informations and supply accessors to them.
- * 
+ *
  * @author Timo "timii" Paananen
  *
  */
@@ -42,79 +42,61 @@ public abstract class AbstractPromotor extends ExtensionPoint implements Promoto
 
 	private TaskListener listener;
 	private Map<PromotionBuildTokens, String> expandedTokens;
-	private String localRepositoryURL;	
-	
-	private String stagingUser;
-	private Secret stagingPassword;
-	
-	private String releaseUser;
-	private Secret releasePassword;
-	
+	private String localRepositoryURL;
+
+	private StandardUsernamePasswordCredentials stagingCredentials;
+
+	private StandardUsernamePasswordCredentials releaseCredentials;
+
 	private boolean skipDeletion;
-	
-	
+
+
 	public void setLocalRepositoryURL(String localRepositoryURL) {
 		this.localRepositoryURL = localRepositoryURL;
 	}
-	
+
 	protected String getLocalRepositoryURL() {
 		return localRepositoryURL;
 	}
-	
+
 	public void setExpandedTokens(
 			Map<PromotionBuildTokens, String> expandedTokens) {
 		this.expandedTokens = expandedTokens;
 	}
-	
+
 	protected Map<PromotionBuildTokens, String> getExpandedTokens() {
 		if(expandedTokens == null) {
 			expandedTokens = new HashMap<PromotionBuildTokens, String>(0);
 		}
 		return expandedTokens;
 	}
-	
+
 	public void setListener(TaskListener listener) {
 		this.listener = listener;
 	}
-	
+
 	protected TaskListener getListener() {
 		return listener;
 	}
-	
+
 	public static ExtensionList<Promotor> getAllPromoters() {
 		return Jenkins.getInstance().getExtensionList(Promotor.class);
 	}
-	
-	protected String getReleaseUser() {
-		return releaseUser;
-	}
-	
-	public void setReleaseUser(String releaseUser) {
-		this.releaseUser = releaseUser;
-	}
-	
-	protected Secret getReleasePassword() {
-		return releasePassword;
-	}
-	
-	public void setReleasePassword(Secret releasePassword) {
-		this.releasePassword = releasePassword;
-	}
-	
-	protected String getStagingUser() {
-		return stagingUser;
+
+	protected StandardUsernamePasswordCredentials getReleaseCredentials() {
+		return releaseCredentials;
 	}
 
-	public void setStagingUser(String stagingUser) {
-		this.stagingUser = stagingUser;
+	public void setReleaseCredentials(StandardUsernamePasswordCredentials releaseCredentials) {
+		this.releaseCredentials = releaseCredentials;
 	}
-	
-	protected Secret getStagingPassword() {
-		return stagingPassword;
+
+	protected StandardUsernamePasswordCredentials getStagingCredentials() {
+		return stagingCredentials;
 	}
-	
-	public void setStagingPassword(Secret stagingPassword) {
-		this.stagingPassword = stagingPassword;
+
+	public void setStagingCredentials(StandardUsernamePasswordCredentials stagingCredentials) {
+		this.stagingCredentials = stagingCredentials;
 	}
 
 	protected boolean isSkipDeletion() {
@@ -124,5 +106,5 @@ public abstract class AbstractPromotor extends ExtensionPoint implements Promoto
 	public void setSkipDeletion(Boolean skipDeletion) {
 		this.skipDeletion = skipDeletion;
 	}
-	
+
 }

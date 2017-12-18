@@ -50,10 +50,10 @@ public class NexusOSSPromotor extends AbstractPromotor {
 				getListener(), 
 				getLocalRepositoryURL(),
 				getExpandedTokens(),
-				getReleaseUser(), 
-				getReleasePassword(), 
-				getStagingUser(),
-				getStagingPassword(),
+				getReleaseCredentials().getUsername(),
+				getReleaseCredentials().getPassword(),
+				getStagingCredentials().getUsername(),
+				getStagingCredentials().getPassword(),
 				isSkipDeletion());
 
 		RemotePromoter promotorTask = new RemotePromoter(promotor);

@@ -28,10 +28,7 @@
         <f:entry title="Repository URL" field="stagingRepository" description="The URL of the staging repository.">
             <f:textbox />
         </f:entry>
-        <f:entry title="User" field="stagingUser" description="The User of the staging repository.">
-            <f:textbox />
-        </f:entry>
-        <f:entry title="${%stagingPW}" field="stagingPW" description="The Password for the staging repository.">
+        <f:entry title="${%stagingCredentials}" field="stagingCredentials" description="The credentials for the staging repository.">
             <c:select />
         </f:entry>
         <f:entry title="Skip deletion" 
@@ -44,11 +41,8 @@
         <f:entry title="Repository URL" field="releaseRepository" description="The URL of the release repository.">
             <f:textbox />
         </f:entry>
-        <f:entry title="User" field="releaseUser" description="The User of the release repository.">
-            <f:textbox />
-        </f:entry>
-        <f:entry title="Password" field="releasePW" description="The Password for the release repository.">
-            <f:password />
+        <f:entry title="${%releaseCredentials}" field="releaseCredentials" description="The credentials for the release repository.">
+            <c:select />
         </f:entry>
     </f:section>
 

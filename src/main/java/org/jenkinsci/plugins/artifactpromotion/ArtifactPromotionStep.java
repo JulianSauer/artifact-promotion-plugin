@@ -1,11 +1,16 @@
 package org.jenkinsci.plugins.artifactpromotion;
 
+import com.cloudbees.plugins.credentials.CredentialsMatchers;
+import com.cloudbees.plugins.credentials.CredentialsProvider;
+import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
 import com.google.common.collect.ImmutableSet;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.security.ACL;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.workflow.steps.*;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -30,30 +35,46 @@ public class ArtifactPromotionStep extends Step implements Serializable {
      * The default constructor. The parameters are injected by jenkins builder
      * and are the same as the (private) fields.
      *
-     * @param groupId           The groupId of the artifact
-     * @param artifactId        The artifactId of the artifact.
-     * @param classifier        The classifier of the artifact.
-     * @param version           The version of the artifact.
-     * @param stagingRepository The URL of the staging repository.
-     * @param stagingUser       User to be used on staging repo.
-     * @param stagingPW         Password to be used on staging repo.
-     * @param releaseUser       User to be used on release repo.
-     * @param releasePW         Password to be used on release repo.
-     * @param releaseRepository The URL of the staging repository
-     * @param promoterClass     The vendor specific class which is used for the promotion, e.g. for NexusOSS
-     * @param debug             Flag for debug output. Currently not used.
+     * @param groupId            The groupId of the artifact
+     * @param artifactId         The artifactId of the artifact.
+     * @param classifier         The classifier of the artifact.
+     * @param version            The version of the artifact.
+     * @param stagingRepository  The URL of the staging repository.
+     * @param stagingCredentials Credentials to be used on staging repo.
+     * @param releaseCredentials Credentials to be used on release repo.
+     * @param releaseRepository  The URL of the staging repository
+     * @param promoterClass      The vendor specific class which is used for the promotion, e.g. for NexusOSS
      */
     @DataBoundConstructor
     public ArtifactPromotionStep(String groupId, String artifactId, String classifier,
                                  String version, String stagingRepository,
-                                 String stagingUser, String stagingPW, String releaseUser,
-                                 String releasePW, String releaseRepository, String promoterClass,
-                                 boolean debug) {
+                                 String stagingCredentials,
+                                 String releaseCredentials,
+                                 String releaseRepository, String promoterClass) {
+        StandardUsernamePasswordCredentials stagingUserPassword = null;
+        StandardUsernamePasswordCredentials releaseUserPassword = null;
+        if (stagingCredentials != null) {
+            stagingUserPassword = CredentialsMatchers.firstOrNull(
+                    CredentialsProvider.lookupCredentials(
+                            StandardUsernamePasswordCredentials.class,
+                            Jenkins.getInstance(),
+                            ACL.SYSTEM),
+                    CredentialsMatchers.withId(stagingCredentials));
+        }
+
+        if (releaseCredentials != null) {
+            releaseUserPassword = CredentialsMatchers.firstOrNull(
+                    CredentialsProvider.lookupCredentials(
+                            StandardUsernamePasswordCredentials.class,
+                            Jenkins.getInstance(),
+                            ACL.SYSTEM),
+                    CredentialsMatchers.withId(releaseCredentials));
+        }
+
         artifactPromotionHelper = new ArtifactPromotionHelper(groupId, artifactId, classifier,
                 version, "jar", stagingRepository,
-                stagingUser, stagingPW, releaseUser,
-                releasePW, releaseRepository, promoterClass,
-                debug, true);
+                stagingUserPassword, releaseUserPassword, releaseRepository, promoterClass,
+                false, true);
     }
 
     @Override
@@ -119,24 +140,25 @@ public class ArtifactPromotionStep extends Step implements Serializable {
         return artifactPromotionHelper.stagingRepository;
     }
 
-    public String getStagingUser() {
-        return artifactPromotionHelper.stagingUser;
+    public String getStagingCredentials() {
+        if (artifactPromotionHelper.stagingCredentials == null)
+            return "";
+        return artifactPromotionHelper.stagingCredentials.getId();
     }
 
-    public String getStagingPW() {
-        return artifactPromotionHelper.stagingPW.toString();
-    }
-
-    public String getReleaseUser() {
-        return artifactPromotionHelper.releaseUser;
-    }
-
-    public String getReleasePW() {
-        return artifactPromotionHelper.releasePW.toString();
+    public String getReleaseCredentials() {
+        if (artifactPromotionHelper.releaseCredentials == null)
+            return "";
+        return artifactPromotionHelper.releaseCredentials.getId();
     }
 
     public String getReleaseRepository() {
         return artifactPromotionHelper.releaseRepository;
+    }
+
+    @DataBoundSetter
+    public void setDebug(boolean debug) {
+        artifactPromotionHelper.debug = debug;
     }
 
     public boolean isDebug() {

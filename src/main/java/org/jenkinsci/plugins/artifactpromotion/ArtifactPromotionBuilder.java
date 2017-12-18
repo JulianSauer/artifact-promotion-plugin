@@ -22,6 +22,7 @@
  */
 package org.jenkinsci.plugins.artifactpromotion;
 
+import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -30,9 +31,6 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
-import hudson.util.ListBoxModel;
-import hudson.util.Secret;
-import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -72,14 +70,10 @@ public class ArtifactPromotionBuilder extends Builder implements SimpleBuildStep
 	 *            The file extension of the artifact.
 	 * @param stagingRepository
 	 *            The URL of the staging repository.
-	 * @param stagingUser
-	 *            User to be used on staging repo.
-	 * @param stagingPW
-	 *            Password to be used on staging repo.
-	 * @param releaseUser
-	 *            User to be used on release repo.
-	 * @param releasePW
-	 *            Password to be used on release repo.
+	 * @param stagingCredentials
+	 *            Credentials to be used on staging repo.
+	 * @param releaseCredentials
+	 *            Credentials to be used on release repo.
 	 * @param releaseRepository
 	 *            The URL of the staging repository
 	 * @param promoterClass
@@ -90,13 +84,14 @@ public class ArtifactPromotionBuilder extends Builder implements SimpleBuildStep
 	@DataBoundConstructor
 	public ArtifactPromotionBuilder(String groupId, String artifactId, String classifier,
 									String version, String extension, String stagingRepository,
-									String stagingUser, String stagingPW, String releaseUser,
-									String releasePW, String releaseRepository, String promoterClass,
+									StandardUsernamePasswordCredentials stagingCredentials,
+									StandardUsernamePasswordCredentials releaseCredentials,
+									String releaseRepository, String promoterClass,
 									boolean debug, boolean skipDeletion) {
 		artifactPromotionHelper = new ArtifactPromotionHelper(groupId, artifactId, classifier,
 				version, extension, stagingRepository,
-				stagingUser, stagingPW, releaseUser,
-				releasePW, releaseRepository, promoterClass,
+				stagingCredentials, releaseCredentials,
+				releaseRepository, promoterClass,
 				debug, skipDeletion);
 	}
 
@@ -179,20 +174,12 @@ public class ArtifactPromotionBuilder extends Builder implements SimpleBuildStep
 		return artifactPromotionHelper.stagingRepository;
 	}
 
-	public String getStagingUser() {
-		return artifactPromotionHelper.stagingUser;
+	public StandardUsernamePasswordCredentials getStagingCredentials() {
+		return artifactPromotionHelper.stagingCredentials;
 	}
 
-	public Secret getStagingPW() {
-		return artifactPromotionHelper.stagingPW;
-	}
-
-	public String getReleaseUser() {
-		return artifactPromotionHelper.releaseUser;
-	}
-
-	public Secret getReleasePW() {
-		return artifactPromotionHelper.releasePW;
+	public StandardUsernamePasswordCredentials getReleaseCredentials() {
+		return artifactPromotionHelper.releaseCredentials;
 	}
 
 	public String getReleaseRepository() {
@@ -226,10 +213,10 @@ public class ArtifactPromotionBuilder extends Builder implements SimpleBuildStep
 		builder.append(artifactPromotionHelper.localRepoLocation);
 		builder.append(", stagingRepository=");
 		builder.append(artifactPromotionHelper.stagingRepository);
-		builder.append(", stagingUser=");
-		builder.append(artifactPromotionHelper.stagingUser);
-		builder.append(", releaseUser=");
-		builder.append(artifactPromotionHelper.releaseUser);
+		builder.append(", stagingCredentials=");
+		builder.append(artifactPromotionHelper.stagingCredentials.getId());
+		builder.append(", releaseCredentials=");
+		builder.append(artifactPromotionHelper.releaseCredentials.getId());
 		builder.append(", releaseRepository=");
 		builder.append(artifactPromotionHelper.releaseRepository);
 		builder.append(", debug=");
